@@ -48,9 +48,39 @@ depth budgets): [docs/API_BRIDGE.md](docs/API_BRIDGE.md).
 ## Requirements
 
 - Bitwig Studio 6 (API v25)
-- JDK 21
+- For the Claude Code plugin path: Claude Code + `uv` (Python 3.10, uv-managed)
+- For building from source: JDK 21
 
 ## Quick start
+
+**Claude Code:**
+
+```
+/plugin marketplace add jtresko/wigout-ai
+/plugin install wigout-studio
+/studio setup
+```
+
+`/studio setup` detects your OS, installs `Wigout.bwextension` into
+Bitwig's Extensions folder (downloading the latest release automatically),
+and walks through the rest of the one-time setup — no manual build step,
+no `claude mcp add`. In Bitwig: **Dashboard → Settings → Controllers → Add
+Controller → vendor "MCP" → "Wigout AI"**.
+
+**Other MCP clients** (Claude Desktop, etc.): from `plugin/scripts`, run
+`uv run python wizard.py deploy-extension` then `uv run python wizard.py
+mcp-snippet` for a ready-to-paste MCP server config — no plugin, no slash
+commands, just the raw bridge.
+
+**Building from source?** See [Building from source](#building-from-source) below.
+
+## Testing
+
+```bash
+cd extension && JAVA_HOME='C:/Program Files/Java/jdk-21.0.10' ./gradlew test
+```
+
+## Building from source
 
 ```bash
 cd extension
@@ -58,23 +88,15 @@ export JAVA_HOME='C:/Program Files/Java/jdk-21.0.10'
 ./gradlew deploy    # builds Wigout.bwextension and copies it to Bitwig's Extensions folder
 ```
 
-In Bitwig: **Dashboard → Settings → Controllers → Add Controller → vendor
-"MCP" → "Wigout AI"**.
-
-Connect an MCP client while Bitwig is running (the extension serves
-Streamable HTTP MCP at `http://localhost:61169/mcp`):
+Then connect an MCP client manually:
 
 ```bash
 claude mcp add --transport http bitwig http://localhost:61169/mcp
 ```
 
-Full setup details: [docs/USAGE.md](docs/USAGE.md).
-
-## Testing
-
-```bash
-cd extension && JAVA_HOME='C:/Program Files/Java/jdk-21.0.10' ./gradlew test
-```
+This is the path for contributors working on the extension itself — end
+users should use the [Quick start](#quick-start) above instead, which
+never requires a JDK.
 
 ## Wigout Studio — the Claude Code plugin
 
