@@ -186,3 +186,32 @@ def test_cli_scan_default_args_unchanged(capsys):
     assert "bridge_reachable" in out
     assert "auto_detect_candidates" in out
     assert "extension_deployed" in out
+
+
+def test_diagnose_not_deployed_from_precomputed_scan():
+    result = wz.diagnose(scan_result={"extension_deployed": False, "bridge_reachable": False})
+    assert result["status"] == "not_deployed"
+    assert "isn't installed" in result["message"]
+
+
+def test_diagnose_unreachable_from_precomputed_scan():
+    result = wz.diagnose(scan_result={"extension_deployed": True, "bridge_reachable": False})
+    assert result["status"] == "unreachable"
+    assert "running" in result["message"]
+
+
+def test_diagnose_ok_from_precomputed_scan():
+    result = wz.diagnose(scan_result={"extension_deployed": True, "bridge_reachable": True})
+    assert result["status"] == "ok"
+
+
+def test_diagnose_computes_its_own_scan_when_no_result_given(tmp_path):
+    result = wz.diagnose(config_path=tmp_path / "config.json", system="Windows", home=tmp_path, bridge_check=lambda: True)
+    assert result["status"] == "not_deployed"  # nothing deployed under a fresh tmp_path
+
+
+def test_cli_diagnose_prints_status_and_message(capsys):
+    wz.main(["diagnose", "--port", "1"])  # port 1 is reserved; never has a listener
+    out = json.loads(capsys.readouterr().out)
+    assert "status" in out
+    assert "message" in out
