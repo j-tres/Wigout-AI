@@ -28,3 +28,13 @@ Full evidence: `docs/bitwig_docs/live-api-findings.md` (repo root).
    `delete_track` take `track_name`). The **master is the `masterTrack`
    root**, never `tracks[N]`. After any create/delete, re-read the list —
    never reuse a pre-mutation index.
+8. **No connection at all?** Before relaying a raw MCP transport error to
+   the user, run `uv run python ${CLAUDE_PLUGIN_ROOT}/scripts/wizard.py
+   diagnose` (from `${CLAUDE_PLUGIN_ROOT}/scripts`) and act on its
+   `status`: `"not_deployed"` → run `wizard.py deploy-extension` yourself
+   (no `--source`, so it pulls the latest GitHub release) and retry the
+   failed call once; if that also fails, tell the user to run `/studio
+   setup`. `"unreachable"` → tell the user plainly that the extension is
+   installed but Bitwig doesn't seem to be running with a project open —
+   don't guess further. `"ok"` → this isn't a connectivity issue; relay
+   the actual tool error instead of a generic message.
