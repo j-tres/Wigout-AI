@@ -1,0 +1,36 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Ensure gradlew is executable
+        run: chmod +x extension/gradlew
+
+      - name: Build Wigout.bwextension
+        working-directory: extension
+        run: ./gradlew build
+
+      - name: Create release and upload asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            extension/build/extensions/Wigout.bwextension \
+            --title "${{ github.ref_name }}" \
+            --generate-notes
