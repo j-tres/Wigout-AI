@@ -104,6 +104,56 @@ def mcp_snippet(host="localhost", port=MCP_PORT_DEFAULT):
     return {"mcpServers": {"bitwig": {"type": "http", "url": f"http://{host}:{port}/mcp"}}}
 
 
+def diagnose(scan_result=None, **scan_kwargs):
+    """Classify current connectivity state into a status + plain-language message.
+
+    Pure with respect to `scan_result`: pass an already-computed scan() dict
+    to classify it directly (used by tests and anywhere a scan was already
+    done), or omit it to have diagnose() call scan(**scan_kwargs) itself.
+    Used by the reactive tool-call-failure path documented in
+    plugin/skills/bitwig-project/references/bridge-landmines.md.
+    """
+    result = scan_result if scan_result is not None else scan(**scan_kwargs)
+    if not result["extension_deployed"]:
+        return {
+            "status": "not_deployed",
+            "message": "The Wigout AI extension isn't installed in Bitwig yet.",
+        }
+    if not result["bridge_reachable"]:
+        return {
+            "status": "unreachable",
+            "message": "The extension is installed, but Bitwig doesn't seem to be running with a project open.",
+        }
+    return {
+        "status": "ok",
+        "message": "Bridge looks healthy — this failure isn't a connectivity issue.",
+    }
+
+
+def session_start_check(**scan_kwargs):
+    """Auto-deploy the extension when missing; return a one-line status, or None when healthy.
+
+    Called every session by the SessionStart hook (plugin/hooks/session-start.sh)
+    via the `session-start-check` CLI subcommand below. Returns None (meaning:
+    print nothing) once the extension is deployed -- this only ever does
+    anything on a fresh install, and never on the steady-state path.
+    """
+    result = scan(**scan_kwargs)
+    if result["extension_deployed"]:
+        return None
+    try:
+        deploy_extension()
+        return (
+            "Installed the Wigout AI extension into Bitwig's Extensions folder "
+            "— restart/reload it in Bitwig to activate it."
+        )
+    except Exception as e:
+        return (
+            f"Wigout AI extension isn't installed yet and auto-install failed "
+            f"({type(e).__name__}: {e}) — run `/studio setup` to install it manually."
+        )
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Wigout AI install/config wizard")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -124,6 +174,12 @@ def main(argv=None):
     snippet_parser.add_argument("--host", default="localhost")
     snippet_parser.add_argument("--port", type=int, default=MCP_PORT_DEFAULT)
 
+    diagnose_parser = sub.add_parser("diagnose")
+    diagnose_parser.add_argument("--host", default="localhost")
+    diagnose_parser.add_argument("--port", type=int, default=MCP_PORT_DEFAULT)
+
+    sub.add_parser("session-start-check")
+
     args = parser.parse_args(argv)
     try:
         if args.command == "scan":
@@ -137,6 +193,13 @@ def main(argv=None):
             result = deploy_extension(source=args.source, extensions_dir_override=args.extensions_dir)
         elif args.command == "mcp-snippet":
             result = mcp_snippet(host=args.host, port=args.port)
+        elif args.command == "diagnose":
+            result = diagnose(bridge_check=lambda: _bridge_reachable(host=args.host, port=args.port))
+        elif args.command == "session-start-check":
+            message = session_start_check()
+            if message:
+                print(message)
+            return
     except Exception as e:
         print(json.dumps({"error": f"{type(e).__name__}: {e}"}))
         sys.exit(1)

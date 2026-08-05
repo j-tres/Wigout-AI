@@ -1,0 +1,17 @@
+{
+  "description": "Auto-deploys the Wigout AI Bitwig extension on first use; silent once installed.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}
