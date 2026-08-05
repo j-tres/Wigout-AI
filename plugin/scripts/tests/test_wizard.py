@@ -215,3 +215,55 @@ def test_cli_diagnose_prints_status_and_message(capsys):
     out = json.loads(capsys.readouterr().out)
     assert "status" in out
     assert "message" in out
+
+
+def test_session_start_check_silent_when_already_deployed(tmp_path):
+    ext_dir = tmp_path / "Documents" / "Bitwig Studio" / "Extensions"
+    ext_dir.mkdir(parents=True)
+    (ext_dir / wz.EXTENSION_ASSET_NAME).write_bytes(b"already-here")
+
+    message = wz.session_start_check(
+        config_path=tmp_path / "config.json", system="Windows", home=tmp_path, bridge_check=lambda: True
+    )
+
+    assert message is None
+
+
+def test_session_start_check_auto_deploys_when_missing(tmp_path, monkeypatch):
+    monkeypatch.setattr(wz, "extensions_dir", lambda **kwargs: tmp_path / "Extensions")
+    monkeypatch.setattr(wz, "_fetch_latest_release_asset", lambda: b"downloaded-bytes")
+
+    message = wz.session_start_check(
+        config_path=tmp_path / "config.json", system="Windows", home=tmp_path, bridge_check=lambda: False
+    )
+
+    assert message is not None
+    assert "Installed the Wigout AI extension" in message
+    assert (tmp_path / "Extensions" / wz.EXTENSION_ASSET_NAME).read_bytes() == b"downloaded-bytes"
+
+
+def test_session_start_check_reports_soft_failure_when_auto_deploy_fails(tmp_path, monkeypatch):
+    monkeypatch.setattr(wz, "extensions_dir", lambda **kwargs: tmp_path / "Extensions")
+
+    def _boom():
+        raise RuntimeError("offline")
+
+    monkeypatch.setattr(wz, "_fetch_latest_release_asset", _boom)
+
+    message = wz.session_start_check(
+        config_path=tmp_path / "config.json", system="Windows", home=tmp_path, bridge_check=lambda: False
+    )
+
+    assert "auto-install failed" in message
+    assert "/studio setup" in message
+
+
+def test_cli_session_start_check_silent_when_deployed(tmp_path, monkeypatch, capsys):
+    ext_dir = tmp_path / "Documents" / "Bitwig Studio" / "Extensions"
+    ext_dir.mkdir(parents=True)
+    (ext_dir / wz.EXTENSION_ASSET_NAME).write_bytes(b"here")
+    monkeypatch.setattr(wz, "extensions_dir", lambda **kwargs: ext_dir)
+
+    wz.main(["session-start-check"])
+
+    assert capsys.readouterr().out == ""
