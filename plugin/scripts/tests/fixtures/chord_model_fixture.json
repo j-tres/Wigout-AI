@@ -1,0 +1,56 @@
+{
+  "modelSchema": 1,
+  "provenance": {
+    "corpus": "FixtureCorpus", "corpusVersion": "0", "license": "CC0",
+    "attribution": "hand-built test fixture", "buildDate": "2026-07-11T00:00:00+00:00",
+    "inputRows": 10, "keptRows": 8, "dropRate": 0.2,
+    "drops": {}, "slices": {"pop": 8}, "buckets": ["pop"],
+    "params": {}, "vocabularyNote": "fixture"
+  },
+  "buckets": {
+    "pop": {
+      "major": {
+        "unigrams": {"I": 100, "V": 80, "vi": 60, "IV": 60},
+        "bigrams": {
+          "I": {"V": 50, "IV": 30, "vi": 20},
+          "V": {"vi": 40, "I": 40},
+          "vi": {"IV": 50},
+          "IV": {"I": 40, "V": 20}
+        },
+        "trigrams": {"I,V": {"vi": 30, "I": 10}, "V,vi": {"IV": 25}},
+        "loops": {
+          "3": [],
+          "4": [
+            {"progression": ["I", "V", "vi", "IV"], "count": 42},
+            {"progression": ["I", "IV", "vi", "V"], "count": 17}
+          ],
+          "5": [], "6": [], "7": [], "8": []
+        },
+        "scoreHistogram": {"binEdges": [-3.0, -2.0, -1.0, 0.0], "counts": [10, 60, 30]}
+      },
+      "minor": {
+        "unigrams": {"i": 10, "VI": 8, "III": 6, "VII": 6},
+        "bigrams": {"i": {"VI": 5}, "VI": {"III": 4}, "III": {"VII": 3}},
+        "trigrams": {"i,VI": {"III": 3}},
+        "loops": {"3": [], "4": [{"progression": ["i", "VI", "III", "VII"], "count": 4}], "5": [], "6": [], "7": [], "8": []},
+        "scoreHistogram": {"binEdges": [-3.0, -2.0, -1.0, 0.0], "counts": [1, 2, 2]}
+      }
+    },
+    "global": {
+      "major": {
+        "unigrams": {"I": 50, "V": 40, "vi": 30, "IV": 30},
+        "bigrams": {"I": {"V": 25, "IV": 15}, "V": {"I": 20, "vi": 10}},
+        "trigrams": {"I,V": {"vi": 20, "IV": 20}},
+        "loops": {"3": [], "4": [{"progression": ["I", "V", "vi", "IV"], "count": 10}], "5": [], "6": [], "7": [], "8": []},
+        "scoreHistogram": {"binEdges": [-3.0, -2.0, -1.0, 0.0], "counts": [5, 30, 15]}
+      },
+      "minor": {
+        "unigrams": {"i": 10, "VI": 8, "III": 6, "VII": 6},
+        "bigrams": {"i": {"VI": 5}, "VI": {"III": 4}, "III": {"VII": 3}},
+        "trigrams": {"i,VI": {"III": 3}},
+        "loops": {"3": [], "4": [{"progression": ["i", "VI", "III", "VII"], "count": 4}], "5": [], "6": [], "7": [], "8": []},
+        "scoreHistogram": {"binEdges": [-3.0, -2.0, -1.0, 0.0], "counts": [1, 2, 2]}
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+https://github.com/kirkwoodwest/Bitwig-Extension-Hub
+
+Deprecated API items:
+file:///C:/Program%20Files/Bitwig%20Studio%206.1%20Beta%202/resources/doc/control-surface/api/deprecated-list.html
+
+Other MCP Projects:
+https://github.com/WeModulate/bitwig-mcp-server
+

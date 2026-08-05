@@ -1,0 +1,15 @@
+node_modules/
+*.bwextension
+
+# Large Bitwig reference PDF (kept locally, not in git)
+docs/bitwig_docs/*.pdf
+
+# Claude worktrees (session-local checkouts)
+.claude/worktrees/
+
+plugin/scripts/.venv/
+__pycache__/
+notepad.txt
+
+# Playwright MCP scratch (page snapshots, console logs, evaluation dumps)
+.playwright-mcp/
