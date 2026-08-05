@@ -1,0 +1,15 @@
+{
+  "name": "wigout-ai",
+  "description": "AI studio team for Bitwig Studio, distributed as a Claude Code plugin over the Wigout MCP bridge",
+  "owner": {
+    "name": "Jon Tresko",
+    "url": "https://github.com/jtresko"
+  },
+  "plugins": [
+    {
+      "name": "wigout-studio",
+      "source": "./plugin",
+      "description": "AI studio team for Bitwig Studio: coach, composer, theory authority, and engineer scaffolding over the Wigout MCP bridge"
+    }
+  ]
+}
