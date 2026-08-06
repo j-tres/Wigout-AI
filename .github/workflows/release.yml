@@ -8,6 +8,7 @@ on:
 permissions:
   contents: write
   actions: write
+  
 
 jobs:
   build-and-release:
@@ -31,7 +32,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${{ github.ref_name }}" \
-            extension/build/extensions/Wigout.bwextension \
-            --title "${{ github.ref_name }}" \
-            --generate-notes
+          TAG="${{ github.ref_name }}"
+          ASSET="extension/build/extensions/Wigout.bwextension"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists — updating asset instead of creating."
+            gh release upload "$TAG" "$ASSET" --clobber
+          else
+            gh release create "$TAG" "$ASSET" \
+              --title "$TAG" \
+              --generate-notes
+          fi
