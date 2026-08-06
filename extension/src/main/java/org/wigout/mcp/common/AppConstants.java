@@ -22,7 +22,7 @@ public class AppConstants {
     /**
      * The application author.
      */
-    public static final String APP_AUTHOR = "Jon Tresko";
+    public static final String APP_AUTHOR = "jTr3s";
 
     static {
         APP_VERSION = performVersionLoadingInternal();

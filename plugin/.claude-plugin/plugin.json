@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "description": "AI studio team for Bitwig Studio: coach, composer, theory authority, and engineer scaffolding over the Wigout MCP bridge",
   "author": { "name": "JT" },
-  "homepage": "https://github.com/jtresko/wigout-ai",
-  "repository": "https://github.com/jtresko/wigout-ai",
+  "homepage": "https://github.com/j-tres/wigout-ai",
+  "repository": "https://github.com/j-tres/wigout-ai",
   "license": "MIT",
   "keywords": ["bitwig", "mcp", "music-production", "daw", "ai-agent"]
 }

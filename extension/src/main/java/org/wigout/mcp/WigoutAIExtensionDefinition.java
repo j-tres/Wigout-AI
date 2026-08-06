@@ -61,7 +61,7 @@ public class WigoutAIExtensionDefinition extends ControllerExtensionDefinition {
 
     @Override
     public String getHelpFilePath() {
-        return "https://github.com/jtresko/wigout-ai/blob/main/README.md";
+        return "https://github.com/j-tres/wigout-ai/blob/main/README.md";
     }
 
     // This method may not be part of the current API version

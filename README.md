@@ -89,7 +89,7 @@ workflows (compose in a key, hum-to-instrument, loudness checks).
 **Claude Code:**
 
 ```
-/plugin marketplace add jtresko/wigout-ai
+/plugin marketplace add j-tres/wigout-ai
 /plugin install wigout-studio
 /studio setup
 ```

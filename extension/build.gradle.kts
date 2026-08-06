@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "org.wigout"
-version = "0.10.1-tresko.1"
+version = "0.10.1-j-tres.1"
 
 repositories {
     mavenCentral()

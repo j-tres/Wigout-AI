@@ -19,7 +19,7 @@ from urllib.request import Request, urlopen
 import wigout_config as wc
 
 MCP_PORT_DEFAULT = 61169
-GITHUB_RELEASES_API = "https://api.github.com/repos/jtresko/wigout-ai/releases/latest"
+GITHUB_RELEASES_API = "https://api.github.com/repos/j-tres/wigout-ai/releases/latest"
 EXTENSION_ASSET_NAME = "Wigout.bwextension"
 
 
