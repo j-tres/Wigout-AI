@@ -101,7 +101,7 @@ def _fetch_latest_release_asset():
 
 
 def mcp_snippet(host="localhost", port=MCP_PORT_DEFAULT):
-    return {"mcpServers": {"bitwig": {"type": "http", "url": f"http://{host}:{port}/mcp"}}}
+    return {"mcpServers": {"Wigout-MCP": {"type": "http", "url": f"http://{host}:{port}/mcp"}}}
 
 
 def diagnose(scan_result=None, **scan_kwargs):

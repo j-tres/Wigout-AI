@@ -100,10 +100,14 @@ and walks through the rest of the one-time setup without a manual build
 step or a `claude mcp add` call. In Bitwig: **Dashboard → Settings → Controllers → Add
 Controller → vendor "MCP" → "Wigout AI"**.
 
-**Other MCP clients** (Claude Desktop, etc.): from `plugin/scripts`, run
+**Other MCP clients** (Claude Desktop chat, etc.): from `plugin/scripts`, run
 `uv run python wizard.py deploy-extension` then `uv run python wizard.py
 mcp-snippet` for a ready-to-paste MCP server config, just the raw bridge
-without a plugin or slash commands.
+without a plugin or slash commands. Paste it into a local settings file —
+`claude_desktop_config.json` (Settings → Developer → Edit Config in Claude
+Desktop) or `.mcp.json`/`~/.claude.json` for Claude Code — **not** "Add
+custom connector": that flow is for account-level remote connectors and
+requires HTTPS, which a localhost-only bridge can never satisfy.
 
 **Building from source?** See [Building from source](#building-from-source) below.
 
@@ -134,7 +138,7 @@ export JAVA_HOME='C:/Program Files/Java/jdk-21.0.10'
 Then connect an MCP client manually:
 
 ```bash
-claude mcp add --transport http bitwig http://localhost:61169/mcp
+claude mcp add --transport http Wigout-MCP http://localhost:61169/mcp
 ```
 
 This is the path for contributors working on the extension itself. End

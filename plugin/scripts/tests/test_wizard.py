@@ -146,26 +146,30 @@ def test_cli_deploy_extension_with_source(tmp_path, capsys):
     assert out["source"] == "local"
 
 
-def test_mcp_snippet_matches_plugin_mcp_json_shape():
+def test_mcp_snippet_is_a_plain_http_entry_for_generic_clients():
+    # Deliberately NOT the plugin's own .mcp.json shape (that one's stdio,
+    # to dodge Claude Desktop's HTTPS-only remote-connector flow). This is
+    # the manual-paste snippet for CLI `claude mcp add` / claude_desktop_config.json,
+    # where a plain local http entry is the correct, working choice.
     snippet = wz.mcp_snippet()
-    assert snippet == {"mcpServers": {"bitwig": {"type": "http", "url": "http://localhost:61169/mcp"}}}
+    assert snippet == {"mcpServers": {"Wigout-MCP": {"type": "http", "url": "http://localhost:61169/mcp"}}}
 
 
 def test_mcp_snippet_respects_custom_host_and_port():
     snippet = wz.mcp_snippet(host="192.168.1.5", port=9999)
-    assert snippet["mcpServers"]["bitwig"]["url"] == "http://192.168.1.5:9999/mcp"
+    assert snippet["mcpServers"]["Wigout-MCP"]["url"] == "http://192.168.1.5:9999/mcp"
 
 
 def test_cli_mcp_snippet(capsys):
     wz.main(["mcp-snippet"])
     out = json.loads(capsys.readouterr().out)
-    assert out["mcpServers"]["bitwig"]["url"] == "http://localhost:61169/mcp"
+    assert out["mcpServers"]["Wigout-MCP"]["url"] == "http://localhost:61169/mcp"
 
 
 def test_cli_mcp_snippet_respects_custom_host_and_port(capsys):
     wz.main(["mcp-snippet", "--host", "192.168.1.5", "--port", "9999"])
     out = json.loads(capsys.readouterr().out)
-    assert out == {"mcpServers": {"bitwig": {"type": "http", "url": "http://192.168.1.5:9999/mcp"}}}
+    assert out == {"mcpServers": {"Wigout-MCP": {"type": "http", "url": "http://192.168.1.5:9999/mcp"}}}
 
 
 def test_cli_scan_respects_custom_port_for_bridge_check(capsys):
