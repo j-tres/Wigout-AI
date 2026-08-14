@@ -1,7 +1,7 @@
 {
   "name": "wigout-studio",
   "displayName": "Wigout Studio",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "AI studio team for Bitwig Studio: coach, composer, theory authority, and engineer scaffolding over the Wigout MCP bridge",
   "author": { "name": "JT" },
   "homepage": "https://github.com/j-tres/wigout-ai",
