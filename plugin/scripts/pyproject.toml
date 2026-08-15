@@ -20,5 +20,5 @@ dev = ["pytest>=8", "pyyaml>=6"]
 # 81.0.0 -- the version that removes it, not the one that deprecates it, is
 # the actual cutoff; live-verified 2026-08-14, correcting an earlier <84 pin
 # that had since drifted past the removal as 82/83 were released)
-mastering = ["matchering>=2.0", "setuptools<82"]
-stems = ["audio-separator>=0.24", "setuptools<82"]
+mastering = ["matchering>=2.0", "setuptools<84"]
+stems = ["audio-separator>=0.24", "setuptools<84"]
