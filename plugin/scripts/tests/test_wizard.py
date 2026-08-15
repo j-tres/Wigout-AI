@@ -67,6 +67,153 @@ def test_cli_write_locations_no_values_is_json_error(capsys):
     assert "error" in err
 
 
+class FakeCompletedProcess:
+    def __init__(self, returncode=0, stdout=""):
+        self.returncode = returncode
+        self.stdout = stdout
+
+
+def test_check_command_available_true_when_which_finds_it():
+    assert wz.check_command_available("ffmpeg", which=lambda name: "/usr/bin/ffmpeg") is True
+
+
+def test_check_command_available_false_when_which_finds_nothing():
+    assert wz.check_command_available("ffmpeg", which=lambda name: None) is False
+
+
+def test_install_hint_windows():
+    assert "winget" in wz.install_hint("ffmpeg", system="Windows")
+
+
+def test_install_hint_macos():
+    assert "brew" in wz.install_hint("ffmpeg", system="Darwin")
+
+
+def test_install_hint_linux():
+    assert "apt" in wz.install_hint("ffmpeg", system="Linux")
+
+
+def test_check_python_imports_true_on_zero_exit():
+    result = wz.check_python_imports(["music21"], run=lambda *a, **k: FakeCompletedProcess(returncode=0))
+    assert result is True
+
+
+def test_check_python_imports_false_on_nonzero_exit():
+    result = wz.check_python_imports(["basic_pitch"], run=lambda *a, **k: FakeCompletedProcess(returncode=1))
+    assert result is False
+
+
+def test_check_python_imports_builds_comma_joined_import_statement():
+    captured = {}
+
+    def fake_run(cmd, **kwargs):
+        captured["cmd"] = cmd
+        return FakeCompletedProcess(returncode=0)
+
+    wz.check_python_imports(["music21", "librosa"], run=fake_run)
+
+    assert captured["cmd"][-1] == "import music21, librosa"
+
+
+def test_detect_gpu_returns_stripped_output_on_success():
+    result = wz.detect_gpu(run=lambda *a, **k: FakeCompletedProcess(returncode=0, stdout="RTX 4070, 8188 MiB\n"))
+    assert result == "RTX 4070, 8188 MiB"
+
+
+def test_detect_gpu_returns_none_on_nonzero_exit():
+    result = wz.detect_gpu(run=lambda *a, **k: FakeCompletedProcess(returncode=1, stdout=""))
+    assert result is None
+
+
+def test_detect_gpu_returns_none_when_nvidia_smi_missing():
+    def fake_run(*a, **k):
+        raise FileNotFoundError("no nvidia-smi")
+
+    assert wz.detect_gpu(run=fake_run) is None
+
+
+def test_claude_music_installed_true_when_dir_exists(tmp_path):
+    cache = tmp_path / ".claude" / "plugins" / "cache" / "claude-music"
+    cache.mkdir(parents=True)
+    assert wz.claude_music_installed(home=tmp_path) is True
+
+
+def test_claude_music_installed_false_when_dir_missing(tmp_path):
+    assert wz.claude_music_installed(home=tmp_path) is False
+
+
+def test_sync_dependencies_pins_python_then_syncs_both_groups_together():
+    calls = []
+
+    def fake_run(cmd, **kwargs):
+        calls.append(cmd)
+        return FakeCompletedProcess(returncode=0)
+
+    wz.sync_dependencies(run=fake_run)
+
+    assert calls[0] == ["uv", "python", "pin", "3.10"]
+    assert calls[1] == ["uv", "sync", "--group", "mastering", "--group", "stems"]
+
+
+def test_setup_check_skips_sync_when_check_only(tmp_path):
+    calls = []
+
+    def fake_run(cmd, **kwargs):
+        calls.append(cmd)
+        return FakeCompletedProcess(returncode=0, stdout="uv 0.9.5")
+
+    wz.setup_check(
+        check_only=True,
+        run=fake_run,
+        which=lambda name: "/usr/bin/" + name,
+        home=tmp_path,
+        system="Windows",
+        bridge_check=lambda: True,
+    )
+
+    assert not any(cmd[:2] == ["uv", "sync"] for cmd in calls)
+
+
+def test_setup_check_reports_all_fields(tmp_path):
+    def fake_run(cmd, **kwargs):
+        return FakeCompletedProcess(returncode=0, stdout="uv 0.9.5")
+
+    report = wz.setup_check(
+        check_only=True,
+        run=fake_run,
+        which=lambda name: "/usr/bin/" + name,
+        home=tmp_path,
+        system="Windows",
+        bridge_check=lambda: True,
+    )
+
+    assert report["ffmpeg"] == "ok"
+    assert report["python_env"] == "ok (3.10, deps importable)"
+    assert report["matchering"] == "ok"
+    assert report["audio_separator"] == "ok"
+    assert report["bridge"] == "reachable on :61169"
+    assert "RTX" not in report["gpu"]  # fake_run's stdout is "uv 0.9.5", passed straight through
+    assert report["claude_music"] == "not installed - composer will offer acestep-api or MIDI-only"
+
+
+def test_setup_check_reports_missing_ffmpeg_with_os_specific_hint(tmp_path):
+    def fake_run(cmd, **kwargs):
+        return FakeCompletedProcess(returncode=0, stdout="")
+
+    report = wz.setup_check(
+        check_only=True,
+        run=fake_run,
+        which=lambda name: None,
+        home=tmp_path,
+        system="Darwin",
+        bridge_check=lambda: False,
+    )
+
+    assert "MISSING" in report["ffmpeg"]
+    assert "brew" in report["ffmpeg"]
+    assert report["bridge"] == "UNREACHABLE - is Bitwig running with the Wigout extension?"
+
+
 def test_bridge_reachable_true_when_port_open():
     server = socket_module.socket(socket_module.AF_INET, socket_module.SOCK_STREAM)
     server.bind(("localhost", 0))

@@ -20,7 +20,6 @@ You are the router, not a domain expert. NO domain opinions here.
 4. If the user signals learning intent anywhere in the request, also load
    `coach` in ride-along mode.
 5. `/studio setup` → follow the setup procedure in
-   `${CLAUDE_PLUGIN_ROOT}/skills/front-desk/references/setup.md`
-   (wired in a later task; if missing, run scripts/setup.ps1 and report).
+   `${CLAUDE_PLUGIN_ROOT}/skills/front-desk/references/setup.md`.
 6. Requests that are NOT musical/DAW-related: say the studio doesn't
    cover it and stop — don't freelance.

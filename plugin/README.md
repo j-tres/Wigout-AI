@@ -7,7 +7,8 @@ AI studio team for Bitwig Studio, driving the Wigout MCP bridge
 `reference/ROLE_INDEX.md` for routing and
 `docs/superpowers/specs/2026-07-09-wigout-studio-plugin-design.md` for the design.
 
-Setup: run `/studio setup` (wraps `scripts/setup.ps1`). Python engines are
+Setup: run `/studio setup` (wraps `scripts/setup.ps1` on Windows,
+`scripts/setup.sh` on macOS/Linux). Python engines are
 uv-managed in `scripts/` (Python 3.10 pinned). Optional external tools the
 setup reports on: ffmpeg (spectrograms; loudness works without it via
 pyloudnorm), an NVIDIA GPU + `claude-music`/ACE-Step (audio generation —

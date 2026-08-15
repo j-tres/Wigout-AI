@@ -70,7 +70,8 @@ to `sound-design` rather than shaping devices itself; `coach` pairs
 read-only with whichever role is acting. Full routing and delegation rules:
 [plugin/reference/ROLE_INDEX.md](plugin/reference/ROLE_INDEX.md).
 
-Setup: `/studio setup` (wraps `plugin/scripts/setup.ps1`). Python engines
+Setup: `/studio setup` (wraps `plugin/scripts/setup.ps1` on Windows,
+`setup.sh` on macOS/Linux). Python engines
 are `uv`-managed (Python 3.10 pinned). Optional external tools it reports
 on: ffmpeg (spectrograms; loudness works without it), an NVIDIA GPU +
 claude-music/ACE-Step (audio generation; MIDI paths need neither).
@@ -111,11 +112,6 @@ requires HTTPS, which a localhost-only bridge can never satisfy.
 
 **Building from source?** See [Building from source](#building-from-source) below.
 
-## Testing
-
-```bash
-cd extension && JAVA_HOME='C:/Program Files/Java/jdk-21.0.10' ./gradlew test
-```
 
 ---
 
@@ -144,6 +140,12 @@ claude mcp add --transport http Wigout-MCP http://localhost:61169/mcp
 This is the path for contributors working on the extension itself. End
 users should use the [Quick start](#quick-start) above instead, which
 never requires a JDK.
+
+## Testing
+
+```bash
+cd extension && JAVA_HOME='C:/Program Files/Java/jdk-21.0.10' ./gradlew test
+```
 
 ## Design
 

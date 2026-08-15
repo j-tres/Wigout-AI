@@ -12,6 +12,7 @@ import os
 import platform
 import shutil
 import socket
+import subprocess
 import sys
 from pathlib import Path
 from urllib.request import Request, urlopen
@@ -154,6 +155,98 @@ def session_start_check(**scan_kwargs):
         )
 
 
+PYTHON_ENV_MODULES = ["music21", "librosa", "basic_pitch", "pyloudnorm", "soundfile"]
+
+# Platform-specific install hints. uv itself isn't here -- bootstrapping uv is
+# the native setup.ps1/setup.sh script's job (it has to run *before* this
+# module is reachable at all), so by the time setup_check() runs, uv already
+# exists.
+INSTALL_HINTS = {
+    "Windows": {"ffmpeg": "winget install Gyan.FFmpeg"},
+    "Darwin": {"ffmpeg": "brew install ffmpeg"},
+    "Linux": {"ffmpeg": "your package manager, e.g. apt install ffmpeg / dnf install ffmpeg"},
+}
+
+
+def check_command_available(name, which=shutil.which):
+    return which(name) is not None
+
+
+def install_hint(tool, system=None):
+    system = system or platform.system()
+    hints = INSTALL_HINTS.get(system, INSTALL_HINTS["Linux"])
+    return hints.get(tool, f"install {tool} for your platform")
+
+
+def check_python_imports(modules, run=subprocess.run):
+    result = run(["uv", "run", "python", "-c", f"import {', '.join(modules)}"], capture_output=True, text=True)
+    return result.returncode == 0
+
+
+def detect_gpu(run=subprocess.run):
+    try:
+        result = run(
+            ["nvidia-smi", "--query-gpu=name,memory.total", "--format=csv,noheader"],
+            capture_output=True,
+            text=True,
+        )
+    except FileNotFoundError:
+        return None
+    if result.returncode != 0 or not result.stdout.strip():
+        return None
+    return result.stdout.strip()
+
+
+def claude_music_installed(home=None):
+    home = Path(home) if home else Path.home()
+    return (home / ".claude" / "plugins" / "cache" / "claude-music").is_dir()
+
+
+def sync_dependencies(run=subprocess.run):
+    """Pin the interpreter and install all optional feature groups by default
+    -- combined into one sync so the second group doesn't uninstall the
+    first's shared pin (setuptools, notably)."""
+    run(["uv", "python", "pin", "3.10"])
+    run(["uv", "sync", "--group", "mastering", "--group", "stems"])
+
+
+def setup_check(check_only=False, run=subprocess.run, which=shutil.which, home=None, system=None, bridge_check=None):
+    """Everything setup.ps1/setup.sh delegate once uv is confirmed present:
+    install (unless check_only), then report on the environment.
+
+    uv itself is deliberately not part of this report -- getting here at all
+    means uv already ran this script, so there's nothing left to check.
+    """
+    system = system or platform.system()
+    bridge_check = bridge_check or _bridge_reachable
+
+    if not check_only:
+        sync_dependencies(run=run)
+
+    ffmpeg_ok = check_command_available("ffmpeg", which=which)
+    python_env_ok = check_python_imports(PYTHON_ENV_MODULES, run=run)
+    matchering_ok = check_python_imports(["matchering"], run=run)
+    audio_separator_ok = check_python_imports(["audio_separator"], run=run)
+    gpu = detect_gpu(run=run)
+
+    return {
+        "python_env": "ok (3.10, deps importable)" if python_env_ok else "BROKEN - run setup without -Check",
+        "ffmpeg": "ok" if ffmpeg_ok else f"MISSING - install: {install_hint('ffmpeg', system=system)}",
+        "matchering": "ok" if matchering_ok else (
+            "installed but won't import - reference mastering unavailable; run without -Check to "
+            "retry, or 'uv run python -c import matchering' for the underlying error"
+        ),
+        "audio_separator": "ok" if audio_separator_ok else (
+            "installed but won't import - stem separation unavailable; run without -Check to "
+            "retry, or 'uv run python -c import audio_separator' for the underlying error"
+        ),
+        "bridge": "reachable on :61169" if bridge_check() else "UNREACHABLE - is Bitwig running with the Wigout extension?",
+        "gpu": f"ok ({gpu})" if gpu else "none detected - audio generation unavailable; MIDI paths unaffected",
+        "claude_music": "installed" if claude_music_installed(home=home)
+            else "not installed - composer will offer acestep-api or MIDI-only",
+    }
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Wigout AI install/config wizard")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -180,6 +273,9 @@ def main(argv=None):
 
     sub.add_parser("session-start-check")
 
+    setup_check_parser = sub.add_parser("setup-check")
+    setup_check_parser.add_argument("--check", action="store_true", help="report only, don't install")
+
     args = parser.parse_args(argv)
     try:
         if args.command == "scan":
@@ -200,6 +296,8 @@ def main(argv=None):
             if message:
                 print(message)
             return
+        elif args.command == "setup-check":
+            result = setup_check(check_only=args.check)
     except Exception as e:
         print(json.dumps({"error": f"{type(e).__name__}: {e}"}))
         sys.exit(1)

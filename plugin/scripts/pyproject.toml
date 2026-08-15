@@ -6,7 +6,7 @@ requires-python = ">=3.10,<3.11"
 dependencies = [
     "music21>=9.3",
     "librosa>=0.10",
-    "basic-pitch>=0.4",
+    "basic-pitch[onnx]>=0.4",
     "pyloudnorm>=0.1",
     "soundfile>=0.12",
     "numpy>=1.24,<2",
@@ -14,8 +14,11 @@ dependencies = [
 
 [dependency-groups]
 dev = ["pytest>=8", "pyyaml>=6"]
-# setuptools<81 in both groups: matchering -> resampy AND audio-separator's save
+# setuptools<82 in both groups: matchering -> resampy AND audio-separator's save
 # path import pkg_resources at runtime; uv venvs don't ship it, and setuptools
-# removed pkg_resources after the v81 deprecation (live-verified 2026-07-11)
-mastering = ["matchering>=2.0", "setuptools<84"]
-stems = ["audio-separator>=0.24", "setuptools<84"]
+# removed pkg_resources completely in 82.0.0 (deprecated, not yet removed, in
+# 81.0.0 -- the version that removes it, not the one that deprecates it, is
+# the actual cutoff; live-verified 2026-08-14, correcting an earlier <84 pin
+# that had since drifted past the removal as 82/83 were released)
+mastering = ["matchering>=2.0", "setuptools<82"]
+stems = ["audio-separator>=0.24", "setuptools<82"]
